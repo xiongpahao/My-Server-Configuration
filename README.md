@@ -142,6 +142,9 @@ sudo docker run -d --name gost-warp \
 
 上面的脚本会建立一个监听8443端口的Gost容器，并将其流量转发给Warp。
 
+**Note**
+>参数-F "socks5://172.17.0.2:40001?bypass=~*.reddit.com"表示当且仅当访问域名包含“reddit.com”的网站时才转发流量到Warp。
+>关于Gost分流参数“bypass”的使用方法可以参考[官方文档](https://gost.run/concepts/bypass/)
 
 ### 2.2 配置客户端
 参考[https://github.com/xiongpahao/Magical-Proxy](https://github.com/xiongpahao/Magical-Proxy)
