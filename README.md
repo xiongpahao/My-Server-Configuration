@@ -133,7 +133,7 @@ BIND_IP=0.0.0.0
 CERT_DIR=/etc/letsencrypt
 CERT=${CERT_DIR}/live/${DOMAIN}/fullchain.pem
 KEY=${CERT_DIR}/live/${DOMAIN}/privkey.pem
-sudo docker run -d --name gost \
+sudo docker run -d --name gost-warp \
     -v ${CERT_DIR}:${CERT_DIR}:ro \
     --net=host gogost/gost \
     -L "http2://${USER}:${PASS}@${BIND_IP}:${PORT}?certFile=${CERT}&keyFile=${KEY}&probeResistance=code:404&knock=www.google.com"
