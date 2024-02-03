@@ -84,7 +84,7 @@ sudo docker run -d --name gost \
 >    sudo docker run -d --name gost \
 >        -v ${CERT_DIR}:${CERT_DIR}:ro \
 >        --net=host gogost/gost \
->        -L "http2://${BIND_IP}:${PORT}?auth=${AUTH}&certFile=${CERT}&keyFile=${KEY}&probeResistance=code:404&knock=www.go   ogle.> com"
+>        -L "http2://${BIND_IP}:${PORT}?auth=${AUTH}&certFile=${CERT}&keyFile=${KEY}&probeResistance=code:404&knock=www.google.> com"
 >    ```
 
 如无意外，你的服务就启起来了。 你可以使用如下命令在检查有没有启动成功：
@@ -136,7 +136,7 @@ KEY=${CERT_DIR}/live/${DOMAIN}/privkey.pem
 sudo docker run -d --name gost-warp \
     -v ${CERT_DIR}:${CERT_DIR}:ro \
     --net=host gogost/gost \
-    -L "http2://${USER}:${PASS}@${BIND_IP}:${PORT}?certFile=${CERT}&keyFile=${KEY}&probeResistance=code:404&knock=www.google.com"
+    -L "http2://${USER}:${PASS}@${BIND_IP}:${PORT}?certFile=${CERT}&keyFile=${KEY}&probeResistance=code:404&knock=www.google.com" \
     -F "socks5://172.17.0.2:40001"
 ```
 
