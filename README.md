@@ -87,7 +87,7 @@ sudo docker run -d --name gost \
 >        -L "http2://${BIND_IP}:${PORT}?auth=${AUTH}&certFile=${CERT}&keyFile=${KEY}&probeResistance=code:404&knock=www.google.> com"
 >    ```
 
-如无意外，你的服务就启起来了。 你可以使用如下命令在检查有没有启动成功：
+如无意外，你的服务就已经启动了。 你可以使用如下命令检查有没有启动成功：
 
 -  `sudo docker ps` 来查看 gost 是否在运行。
 -  `netstat -nolp | grep 443` 来查看 gost 是否在监听 443 端口。
