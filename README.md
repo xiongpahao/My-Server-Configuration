@@ -34,11 +34,13 @@ $ sudo certbot certonly --standalone
 
 ## 2. 搭建Gost v3代理
 
+### 2.1 搭建服务端
+
 [gost](https://github.com/go-gost/gost) 是一个非常强的代理服务，它可以设置成 HTTPS 代理，然后把你的服务伪装成一个Web服务器，**这比其它的流量伪装更好，也更隐蔽。这也是这里强烈推荐的一个方式**。
 
 接下来就是启动 Gost 服务了，我们这里通过 Docker 建立 Gost 服务器。
 **Note**
-此处使用的是Gost的v3版本，Gost v2版本的搭建可以参考[https://github.com/xiongpahao/Magical-Proxy](https://github.com/xiongpahao/Magical-Proxy)
+>此处使用的是Gost的v3版本，Gost v2版本的搭建可以参考[https://github.com/xiongpahao/Magical-Proxy](https://github.com/xiongpahao/Magical-Proxy)
 
 ```shell
 #!/bin/bash
@@ -90,3 +92,59 @@ sudo docker run -d --name gost \
 -  `sudo docker ps` 来查看 gost 是否在运行。
 -  `netstat -nolp | grep 443` 来查看 gost 是否在监听 443 端口。
 -  `sudo docker logs gost` 来查看 gost 的日志。
+
+#### 2.1.1 使用Cloudflare原生IP
+
+1) 用Docker安装 Cloudflare Warp
+
+用 Docker 可以很方便地部署起一个 Cloudflare WARP Proxy，只需要一行命令:
+
+```shell
+docker run -v $HOME/.warp:/var/lib/cloudflare-warp:rw \
+  --restart=always --name=cloudflare-warp e7h4n/cloudflare-warp
+```
+
+这条命令会在容器上的 40001 开启一个 socks5 代理，接下来查看这个容器的 ip:
+
+```shell
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' cloudflare-warp
+```
+
+然后可以通过 curl 镜像来测试，例如，如果容器的 ip 是 `172.17.0.2`，则可以运行:
+
+```shell
+docker run --rm curlimages/curl --connect-timeout 2 -x "socks5://172.17.0.2:40001" ipinfo.io
+```
+
+返回的结果中 `org` 字段应该能看到 Cloudflare 相关的信息。
+
+2）再建立一个Gost容器，并将其流量转发给Warp
+
+```shell
+#!/bin/bash
+
+# 下面的四个参数需要改成你的
+DOMAIN="YOUR_DOMAIN"
+USER="username"
+PASS="password"
+PORT=8443
+
+BIND_IP=0.0.0.0
+CERT_DIR=/etc/letsencrypt
+CERT=${CERT_DIR}/live/${DOMAIN}/fullchain.pem
+KEY=${CERT_DIR}/live/${DOMAIN}/privkey.pem
+sudo docker run -d --name gost \
+    -v ${CERT_DIR}:${CERT_DIR}:ro \
+    --net=host gogost/gost \
+    -L "http2://${USER}:${PASS}@${BIND_IP}:${PORT}?certFile=${CERT}&keyFile=${KEY}&probeResistance=code:404&knock=www.google.com"
+    -F "socks5://172.17.0.2:40001"
+```
+
+上面的脚本会建立一个监听8443端口的Gost容器，并将其流量转发给Warp。
+
+
+### 2.2 配置客户端
+参考[https://github.com/xiongpahao/Magical-Proxy](https://github.com/xiongpahao/Magical-Proxy)
+
+## 3. 搭建NextChat+Copilot to GPT4服务
+
