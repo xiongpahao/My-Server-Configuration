@@ -118,7 +118,7 @@ docker run --rm curlimages/curl --connect-timeout 2 -x "socks5://172.17.0.2:4000
 
 返回的结果中 `org` 字段应该能看到 Cloudflare 相关的信息。
 
-2）再建立一个Gost容器，并将其流量转发给Warp
+2) 再建立一个Gost容器，并将其流量转发给Warp
 
 ```shell
 #!/bin/bash
