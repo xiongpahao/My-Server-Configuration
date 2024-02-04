@@ -1,5 +1,5 @@
 # My-Server-Configuriation
-在服务器上搭建Gost代理、NextChat+Copilot to GPT4等服务
+在服务器上搭建Gost代理、 NextChat+Copilot-gpt4-service等服务
 
 ## 1. 准备工作
 
@@ -149,5 +149,80 @@ sudo docker run -d --name gost-warp \
 ### 2.2 配置客户端
 参考[https://github.com/xiongpahao/Magical-Proxy](https://github.com/xiongpahao/Magical-Proxy)
 
-## 3. 搭建NextChat+Copilot to GPT4服务
+## 3. 搭建NextChat+Copilot-gpt4-service服务
 
+### 3.1 搭建Copilot-gpt4-service服务
+
+使用Docker来部署，然后获取Github Copilot Tolken，具体步骤参考[项目主页](https://github.com/aaamoon/copilot-gpt4-service)
+
+部署好之后，使用以下命令来获取它copilot-gpt4-service的容器IP：
+```shell
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' copilot-gpt4-service
+```
+假设获取到的IP为`172.17.0.3`，并且容器所监听的端口号为`8080`，那么接下来地址`http://172.17.0.3:8080`以及已经获取到的Github Copilot Token将作为部署NextChat要用到的参数。
+
+### 3.2 搭建NextChat服务（[项目主页](https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web)）
+
+使用Docker来部署：
+
+```shell
+docker pull yidadaa/chatgpt-next-web
+
+docker run -d -p 3000:3000 \
+   -e BASE_URL=http://172.17.0.3:8080 \
+   -e OPENAI_API_KEY=GITHUB_COPILOT_TOKEN \
+   -e CODE=your-password \
+   yidadaa/chatgpt-next-web
+```
+
+使用以下命令来确认Copilot-gpt4-service和chatgpt-next-web都已经成功运行且分别监听8080和3000端口：
+```shell
+docker ps
+```
+如果没有问题，此时就可以在浏览器中通过地址`http://your_vps_ip:3000`来访问NextChat了（注意需要先输入访问密码，才能使用chatGPT）。
+
+### 3.3 通过Caddy方向代理NextChat，实现通过HTTPS访问
+
+[Caddy](https://caddyserver.com/docs/) 可以很方便地为端口服务提供 HTTPS 支持，自动管理证书，省心省力。
+
+以下是一个 Debian/Ubuntu 系统上使用 Caddy 的示例，其他系统请参考 [Caddy 官方文档](https://caddyserver.com/docs/)。
+
+#### 安装 Caddy
+
+```shell
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update
+sudo apt install caddy
+```
+
+#### 配置 Caddy
+
+```shell
+sudo vi /etc/caddy/Caddyfile
+```
+
+假设已经与VPS绑定的域名为 `your.domain.com`，在 Caddyfile 中添加以下内容：
+
+```shell
+your.domain.com {
+    reverse_proxy localhost:3000
+}
+```
+#### 启动 Caddy
+
+执行以下命令启动 Caddy：
+
+```shell
+# 启动 Caddy
+sudo systemctl start caddy
+
+# 设置 Caddy 开机自启
+sudo systemctl enable caddy
+
+# 查看 Caddy 运行状态
+sudo systemctl status caddy
+```
+
+如果没有问题的话，那此时就可以通过 `https://your.domain.com` 访问 NextChat 服务了。
