@@ -41,6 +41,7 @@ $ sudo certbot certonly --standalone
 [gost](https://github.com/go-gost/gost) 是一个非常强的代理服务，它可以设置成 HTTPS 代理，然后把你的服务伪装成一个Web服务器，**这比其它的流量伪装更好，也更隐蔽。这也是这里强烈推荐的一个方式**。
 
 接下来就是启动 Gost 服务了，我们这里通过 Docker 建立 Gost 服务器。
+
 **Note**
 >此处使用的是Gost的v3版本，Gost v2版本的搭建可以参考[https://github.com/xiongpahao/Magical-Proxy](https://github.com/xiongpahao/Magical-Proxy)
 
