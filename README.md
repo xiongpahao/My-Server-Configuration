@@ -1,6 +1,8 @@
 # My-Server-Configuriation
 在服务器上搭建Gost代理、 NextChat+Copilot-gpt4-service等服务
 
+(本项目的前一部分是基于已故大佬[haoel的项目](https://github.com/haoel/haoel.github.io)改编而成的，大佬R.I.P。)
+
 ## 1. 准备工作
 
 ### 1.1 安装Docker
