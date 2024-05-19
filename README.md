@@ -149,6 +149,14 @@ sudo docker run -d --name gost-warp \
 >使用bypass参数可以对流量进行条件转发，-F "socks5://172.17.0.2:40001?bypass=~*.reddit.com"表示当且仅当访问域名包含“reddit.com”的网站时才转发流量到Warp。
 >关于Gost分流参数“bypass”的使用方法可以参考[官方文档](https://gost.run/concepts/bypass/)
 
+#### 设置证书自动更新
+使用命令`crontab -e`来编辑定时任务：
+```shell
+0 0 1 * * /usr/bin/certbot renew --force-renewal
+5 0 1 * * /usr/bin/docker restart gost
+5 0 1 * * /usr/bin/docker restart gost-warp
+```
+
 ### 2.2 配置客户端
 参考[https://github.com/xiongpahao/Magical-Proxy](https://github.com/xiongpahao/Magical-Proxy)
 
