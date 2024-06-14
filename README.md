@@ -31,7 +31,7 @@ BBR之后移植入Linux内核4.9版本，并且对于QUIC可用。
 $ sudo certbot certonly --standalone
 ```
 
-证书默认生成在 `/etc/letsencrypt/live/<YOUR.DOMAIN.COM/>` 目录下，证书有效期为90天，不过不用担心，certbot会自动在后台更新证书。
+证书默认生成在 `/etc/letsencrypt/live/<YOUR.DOMAIN.COM/>` 目录下，证书有效期为90天，在后面我们会设置certbot自动在后台更新证书。
 
 
 ## 2. 搭建Gost v3代理
