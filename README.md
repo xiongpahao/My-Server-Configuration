@@ -1,5 +1,5 @@
 # My-Server-Configuriation
-在服务器上搭建Gost代理、 NextChat+Copilot-gpt4-service等服务
+在服务器上搭建Gost-v3代理和NextChat服务
 
 (本项目的前一部分是基于已故大佬[haoel的项目](https://github.com/haoel/haoel.github.io)改编而成的，大佬R.I.P。)
 
@@ -160,19 +160,9 @@ sudo docker run -d --name gost-warp \
 ### 2.2 配置客户端
 参考[https://github.com/xiongpahao/Magical-Proxy](https://github.com/xiongpahao/Magical-Proxy)
 
-## 3. 搭建NextChat+Copilot-gpt4-service服务
+## 3. 搭建NextChat服务
 
-### 3.1 搭建Copilot-gpt4-service服务
-
-使用Docker来部署，然后获取Github Copilot Tolken，具体步骤参考[项目主页](https://github.com/aaamoon/copilot-gpt4-service)
-
-部署好之后，使用以下命令来获取它copilot-gpt4-service的容器IP：
-```shell
-docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' copilot-gpt4-service
-```
-假设获取到的IP为`172.17.0.3`，并且容器所监听的端口号为`8080`，那么接下来地址`http://172.17.0.3:8080`以及已经获取到的Github Copilot Token将作为部署NextChat要用到的参数。
-
-### 3.2 搭建NextChat服务（[项目主页](https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web)）
+### 3.1 试用Docker搭建NextChat服务（[项目主页](https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web)）
 
 使用Docker来部署：
 
@@ -181,12 +171,12 @@ docker pull yidadaa/chatgpt-next-web
 
 docker run -d -p 3000:3000 \
    -e BASE_URL=http://172.17.0.3:8080 \
-   -e OPENAI_API_KEY=GITHUB_COPILOT_TOKEN \
+   -e OPENAI_API_KEY=YOUR_API_KEY \
    -e CODE=your-password \
    yidadaa/chatgpt-next-web
 ```
 
-使用以下命令来确认Copilot-gpt4-service和chatgpt-next-web都已经成功运行且分别监听8080和3000端口：
+使用以下命令来确认chatgpt-next-web已经成功运行且监听3000端口：
 ```shell
 docker ps
 ```
