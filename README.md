@@ -52,7 +52,7 @@ $ sudo certbot certonly --standalone
 DOMAIN="YOUR_DOMAIN"
 USER="username"
 PASS="password"
-PORT=443
+PORT=2333
 
 BIND_IP=0.0.0.0
 CERT_DIR=/etc/letsencrypt
@@ -77,7 +77,7 @@ sudo docker run -d --name gost \
 >    DOMAIN="YOU.DOMAIN.NAME"
 >    USER="username"
 >    PASS="password"
->    PORT=443
+>    PORT=2333
 >    AUTH=$(echo -n ${USER}:${PASS} | base64)
 >
 >    BIND_IP=0.0.0.0
@@ -93,30 +93,69 @@ sudo docker run -d --name gost \
 如无意外，你的服务就已经启动了。 你可以使用如下命令检查有没有启动成功：
 
 -  `sudo docker ps` 来查看 gost 是否在运行。
--  `netstat -nolp | grep 443` 来查看 gost 是否在监听 443 端口。
+-  `netstat -nolp | grep 2333` 来查看 gost 是否在监听 2333 端口。
 -  `sudo docker logs gost` 来查看 gost 的日志。
 
 #### 2.1.1 使用Cloudflare原生IP
 
 1) 用Docker安装 Cloudflare Warp
 
-用 Docker 可以很方便地部署起一个 Cloudflare WARP Proxy，只需要一行命令:
+首先在任意目录创建并编辑docker-compose.yml文件：
 
 ```shell
-docker run -v $HOME/.warp:/var/lib/cloudflare-warp:rw \
-  --restart=always --name=cloudflare-warp e7h4n/cloudflare-warp
+    vim docker-compose.yml
+```
+把下面这段代码粘贴进去，然后保存（键盘：ESC --> : --> wq）：
+
+```shell
+    version: "3"
+
+services:
+  warp:
+    image: caomingjun/warp
+    container_name: warp
+    restart: always
+    # add removed rule back (https://github.com/opencontainers/runc/pull/3468)
+    device_cgroup_rules:
+      - 'c 10:200 rwm'
+    ports:
+      - "1080:1080"
+    environment:
+      - WARP_SLEEP=2
+      # - WARP_LICENSE_KEY= # optional
+      # - WARP_ENABLE_NAT=1 # enable nat
+    cap_add:
+      # Docker already have them, these are for podman users
+      - MKNOD
+      - AUDIT_WRITE
+      # additional required cap for warp, both for podman and docker
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv4.conf.all.src_valid_mark=1
+      # uncomment for nat
+      # - net.ipv4.ip_forward=1
+      # - net.ipv6.conf.all.forwarding=1
+      # - net.ipv6.conf.all.accept_ra=2
+    volumes:
+      - ./data:/var/lib/cloudflare-warp
+```
+最后在该目录中运行以下命令：
+
+```shell
+    docker compose up -d
 ```
 
-这条命令会在容器上的 40001 开启一个 socks5 代理，接下来查看这个容器的 ip:
+这条命令会在容器上的 1080端口 开启一个 socks5 代理，接下来查看这个容器的 ip:
 
 ```shell
-docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' cloudflare-warp
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' warp
 ```
 
-然后可以通过 curl 镜像来测试，例如，如果容器的 ip 是 `172.17.0.2`，则可以运行:
+然后可以通过 curl 镜像来测试，例如，如果容器的 ip 是 `172.18.0.2`，则可以运行:
 
 ```shell
-docker run --rm curlimages/curl --connect-timeout 2 -x "socks5://172.17.0.2:40001" ipinfo.io
+docker run --rm curlimages/curl --connect-timeout 2 -x "socks5://172.18.0.2:1080" ipinfo.io
 ```
 
 返回的结果中 `org` 字段应该能看到 Cloudflare 相关的信息。
@@ -130,7 +169,7 @@ docker run --rm curlimages/curl --connect-timeout 2 -x "socks5://172.17.0.2:4000
 DOMAIN="YOUR_DOMAIN"
 USER="username"
 PASS="password"
-PORT=8443
+PORT=2334
 
 BIND_IP=0.0.0.0
 CERT_DIR=/etc/letsencrypt
@@ -140,13 +179,13 @@ sudo docker run -d --name gost-warp \
     -v ${CERT_DIR}:${CERT_DIR}:ro \
     --net=host gogost/gost \
     -L "http2://${USER}:${PASS}@${BIND_IP}:${PORT}?certFile=${CERT}&keyFile=${KEY}&probeResistance=code:404&knock=www.google.com" \
-    -F "socks5://172.17.0.2:40001"
+    -F "socks5://172.18.0.2:1080"
 ```
 
-上面的脚本会建立一个监听8443端口的Gost容器，并将其流量转发给Warp。
+上面的脚本会建立一个监听2334端口的Gost容器，并将其流量转发给Warp。
 
 **Note**
->使用bypass参数可以对流量进行条件转发，-F "socks5://172.17.0.2:40001?bypass=~*.reddit.com"表示当且仅当访问域名包含“reddit.com”的网站时才转发流量到Warp。
+>使用bypass参数可以对流量进行条件转发，-F "socks5://172.18.0.2:1080?bypass=~*.reddit.com"表示当且仅当访问域名包含“reddit.com”的网站时才转发流量到Warp。
 >关于Gost分流参数“bypass”的使用方法可以参考[官方文档](https://gost.run/concepts/bypass/)
 
 #### 2.1.2设置证书自动更新
