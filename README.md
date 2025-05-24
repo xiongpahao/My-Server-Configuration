@@ -100,12 +100,12 @@ sudo docker run -d --name gost \
 
 1) 用Docker安装 Cloudflare Warp
 
-首先在任意目录创建并编辑docker-compose.yml文件：
+首先在任意目录下创建并编辑docker-compose.yml文件：
 
 ```shell
     vim docker-compose.yml
 ```
-把下面这段代码粘贴进去，然后保存（键盘：ESC --> : --> wq）：
+把下面这段代码粘贴进去，然后保存（键盘：ESC --> : --> wq --> 回车）：
 
 ```shell
     version: "3"
