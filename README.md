@@ -103,12 +103,12 @@ sudo docker run -d --name gost \
 首先在任意目录下创建并编辑docker-compose.yml文件：
 
 ```shell
-    vim docker-compose.yml
+vim docker-compose.yml
 ```
 把下面这段代码粘贴进去，然后保存（键盘：ESC --> : --> wq --> 回车）：
 
 ```shell
-    version: "3"
+version: "3"
 
 services:
   warp:
@@ -143,7 +143,7 @@ services:
 最后在该目录中运行以下命令：
 
 ```shell
-    docker compose up -d
+docker compose up -d
 ```
 
 这条命令会在容器上的 1080端口 开启一个 socks5 代理，接下来查看这个容器的 ip:
