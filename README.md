@@ -100,53 +100,39 @@ sudo docker run -d --name gost \
 
 1) 用Docker安装 Cloudflare Warp
 
-首先在任意目录下创建并编辑docker-compose.yml文件：
+执行以下命令：
 
 ```shell
-vim docker-compose.yml
-```
-把下面这段代码粘贴进去，然后保存（键盘：ESC --> : --> wq --> 回车）：
+mkdir -p /usr/local/docker
+cd /usr/local/docker
 
-```shell
-version: "3"
-
+cat <<EOF | sudo tee docker-compose.yml
 services:
   warp:
     image: caomingjun/warp
     container_name: warp
     restart: always
-    # add removed rule back (https://github.com/opencontainers/runc/pull/3468)
     device_cgroup_rules:
       - 'c 10:200 rwm'
     ports:
       - "1080:1080"
     environment:
       - WARP_SLEEP=2
-      # - WARP_LICENSE_KEY= # optional
-      # - WARP_ENABLE_NAT=1 # enable nat
     cap_add:
-      # Docker already have them, these are for podman users
       - MKNOD
       - AUDIT_WRITE
-      # additional required cap for warp, both for podman and docker
       - NET_ADMIN
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
       - net.ipv4.conf.all.src_valid_mark=1
-      # uncomment for nat
-      # - net.ipv4.ip_forward=1
-      # - net.ipv6.conf.all.forwarding=1
-      # - net.ipv6.conf.all.accept_ra=2
     volumes:
       - ./data:/var/lib/cloudflare-warp
-```
-最后在该目录中运行以下命令：
+EOF
 
-```shell
-docker compose up -d
+sudo docker compose up -d
 ```
 
-这条命令会在容器上的 1080端口 开启一个 socks5 代理，接下来查看这个容器的 ip:
+上面的命令会在容器上的 1080端口 开启一个 socks5 代理，接下来查看这个容器的 ip:
 
 ```shell
 docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' warp
